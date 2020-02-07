@@ -1,4 +1,4 @@
-console.log('Topic: Iterators');
+console.log("Topic: Iterators");
 // Task 1
 // RU: Написать функцию keyValueIterable(target),
 //     которая на вход получает объект и возвращает итерируемый объект.
@@ -8,23 +8,44 @@ console.log('Topic: Iterators');
 //     which takes an objects and returns iterable object.
 //     Iterable object allows you to get key/value pairs.
 //     Display in a console all colors from the object colors.
-// const colors = {
-//   green: '#0e0',
-//   orange: '#f50',
-//   pink: '#e07'
-// };
+const colors = {
+    green: "#0e0",
+    orange: "#f50",
+    pink: "#e07"
+};
 
-// const itColors = keyValueIterable(colors);
-// for (const [, color] of itColors) {
-//   console.log(color);
-// }
+const itColors = keyValueIterable(colors);
+for (const [, color] of itColors) {
+    console.log(color);
+}
 
+function keyValueIterable(target) {
+    target[Symbol.iterator] = function() {
+        const keys = Object.keys(target);
+
+        //iterator
+        return {
+            next() {
+                const done = keys.length === 0;
+                const key = keys.shift();
+
+                //iterator result
+                return {
+                    value: [key, target[key]],
+                    done
+                };
+            }
+        };
+    };
+
+    return target;
+}
 
 // Task 2
 // RU: В коллекции хранятся все имена пользователей, которые присоединились к определенной группе телеграмм.
 //     Булевый флаг указывает, является ли пользователь администратором группы.
 //     Создайте итератор, который возвращает только имена администраторов.
-// EN: The following collection store all the names of the user that have joined a particular telegram group. 
+// EN: The following collection store all the names of the user that have joined a particular telegram group.
 //     The boolean flag indicates whether a user is an administrator of the group.
 //     Сreatereate an iterator that returns only the administrators' names.
 
@@ -36,8 +57,7 @@ console.log('Topic: Iterators');
 //   elena: false,
 //   felix: true,  // admin
 // };
-// [...users].forEach(name => console.log(name)); // boris, felix 
-
+// [...users].forEach(name => console.log(name)); // boris, felix
 
 // Task 3
 // RU: Написать функцию take(sequence, amount), которая из бесконечного итерируемого объекта random
@@ -45,17 +65,34 @@ console.log('Topic: Iterators');
 // EN: Create a function take(sequence, amount), which returns a specified amount of numbers
 //     from iterable object random
 
-// const random = {
-//   [Symbol.iterator]: () => ({
-//     next: () => ({
-//       value: Math.random()
-//     })
-//   })
-// };
+const random = {
+    [Symbol.iterator]: () => ({
+        next: () => ({
+            value: Math.random()
+        })
+    })
+};
 
-// const a = [...take(random, 3)];
-// console.log(a);
+function take(random, amount) {
+    return {
+        [Symbol.iterator]() {
+            const it = random[Symbol.iterator]();
 
+            return {
+                next() {
+                    if (amount-- < 1) {
+                        return { done: true };
+                    }
+
+                    return it.next();
+                }
+            };
+        }
+    };
+}
+
+const a = [...take(random, 3)];
+console.log(a);
 
 // Task 4
 // RU: Написать итерируемый итератор, который возвращает числа Фибоначи
@@ -68,6 +105,23 @@ console.log('Topic: Iterators');
 //   if (v > 50) break;
 // }
 
+const Fib = {
+    [Symbol.iterator]() {
+        return {
+            [Symbol.iterator]() {
+                return this;
+            },
+
+            next() {
+                return { value: currentValue, done: false };
+            },
+
+            return(value) {
+                return { value, done: true };
+            }
+        };
+    }
+};
 
 // Task 5
 // RU: Написать итератор для чисел, который позволит получать массивы последовательных целых элементов.
@@ -75,5 +129,21 @@ console.log('Topic: Iterators');
 // EN: Create iterator for numbers, which allows you to get arrays of sequential integers.
 //     Example, [...-3] => [0, -1, -2, -3], [...3] => [0, 1, 2, 3]
 
-// console.log([...-5]);
-// console.log([...5]);
+Number.prototype[Symbol.iterator] = function() {
+    const value = this.valueOf();
+    let current = 0;
+
+    //iterator
+    return {
+        next() {
+            if (value < 0) {
+                return current < value ? { done: true } : { value: current-- };
+            }
+
+            return current > value ? { done: true } : { value: current++ };
+        }
+    };
+};
+
+console.log([...-5]);
+console.log([...5]);
